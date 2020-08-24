@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/stylesheets/style.css  " type="text/css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+
+<body>
+  <!-- main -->
+  <div class="topnav">
+    <a  href="/"  class="text-white  h1 active">Complain Box</a>
+    <!-- <div class="topnav-right">
+      <a href="register">SignUp</a>
+      <a href="login">Login</a>
+    </div> -->
+  </div>
+  <div class="verticalnav">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/admin">Admin</a></li>
+      <li><a href="/logout">AdminLogout</a></li>
+
+    </ul>
+  </div>
+  <div class="main-w3layouts wrapper" style="margin-left:25%;margin-top:50px;padding:10px 60px;height:1000px;">
+    <center>
+     
+        <div class="round"  >
+          <h3>Add Student</h3>
+         
+          <form action="/addStudent" method="POST" id = "addStudent">
+            <div style="text-align: left;margin-left: 40px; margin-right: 0;">
+
+                <label>Enter Student Name:</label>
+                <input class="form-control" type="text" name="studentname" placeholder="Student Name"><br><br>
+                <label>Enter Registration Number:</label>
+                <input class="form-control" type="text" name="registration" placeholder="Registration Number"><br><br>
+
+                <label>Enter Email Address:</label>
+                <input class="form-control" type="text" name="email" placeholder="name@email.com"><br><br>
+
+                <label for="dept">Chose Department:</label>
+                <select id="dept" name="dept">
+                <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+                <option value="Software Engineering">Software Engineering</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Chemical Engineering">Chemical Engineering</option>
+                </select><br><br>
+                <label>Session:</label>
+                <select id="session" name="session">
+                  <option value="2016-17">2016-17</option>
+                  <option value="2017-18">2017-18</option>
+                  <option value="2018-19">2018-19</option>
+                  <option value="2019-20">2019-20</option>
+                  <option value="2020-21">2020-21</option>
+                  <option value="2021-22">2021-22</option>
+                  <option value="2022-23">2022-23</option>
+                </select>
+                
+            
+            </div><br>
+            <input class="btn" type="submit" value="Submit"><br><br>
+          </form>
+        
+        </div>
+    </center>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+
+</html>
