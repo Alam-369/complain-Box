@@ -210,21 +210,40 @@ app.post('/admin',(req,res)=>{
 
     mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
         var db = client.db('complainbox');
-               db.collection('admin').findOne({"Email":req.body.Email},(err,result)=>{
-                   assert.equal(null,err);
+        
+                db.collection('admin').findOne({"Email":req.body.Email},(err,result)=>{
+                  try{ assert.equal(null,err);
                    assert.equal(req.body.Email,result.Email);
+                   
                    assert.equal(req.body.Password,result.Password);
+                   
                    console.log("found!!!!"+ result._id);
                    session.adminId=result._id;
                    
                    
                    res.redirect('/addstudent');
                    client.close();
+                  }
+                  catch(e){
+                    session.studentId=null;
+                    session.studentname = null;
+                    session.registration=null;
+                    session.Studentemail=null;
+                    session.adminId=null;
+                      console.log(e);
+                      res.redirect('/admin');
+                  }
                    
-               });
-           console.log('DB Connected!')
+               })
+           
+
+            
+           console.log('DB Connecmted!')
         }).catch(err => {
-            console.log(err);
+            
+            
+          console.log(err);
+
         });
     
    
@@ -268,6 +287,7 @@ app.post('/studentlogin',(req,res)=>{
     mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
     var db = client.db('complainbox');
            db.collection('student').findOne({"registration":req.body.regnumber},(err,result)=>{
+               try{
                assert.equal(null,err);
                assert.equal(req.body.regnumber,result.registration);
                assert.equal(req.body.Password,result.password);
@@ -279,6 +299,14 @@ app.post('/studentlogin',(req,res)=>{
                
                res.redirect('/profile');
                client.close();
+               }catch(e){
+                session.studentId=null;
+                session.studentname = null;
+                session.registration= null; 
+                session.Studentemail= null;
+                res.redirect('/studentlogin');
+                client.close();
+               }
                
            });
        console.log('DB Connected!')
