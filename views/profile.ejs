@@ -29,17 +29,26 @@
 
    <div id='cssmenu' style="margin-left:25%;margin-top:50px;padding:1px 16px;height:1000px;">
     <div>
-      <h1>Student Profile</h1>
+      
+      <div >
+        
+      <img class="circular--square" width="200" 
+      height="200" src="image/<%= files.filename %>" alt="Avatar">
+                
+      </div>
+      
+      <div>
+        <h1><%= name %></h1><br>
       <ul>
-         <br>
-         <h2><%= name %></h2>
          <li><%= email %></li>
+         <li><%= registration %></li>
          
        </ul><br>
          <a class="btn4 btn-success float-right" href='/addcomplain'>Add Complain</a>
          <a class="btn4 btn5 btn-success float-right" href='/logout'>  Log Out</a>
          <a class="btn4  btn-success float-right" href='/changepassword'>Edit Password</a><br><br>
       <hr>
+      </div>
    </div>
 
    <div class="container" >

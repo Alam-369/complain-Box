@@ -7,9 +7,18 @@ const { debugPort } = require('process');
 const { render } = require('ejs');
 const { json } = require('body-parser');
 const { captureRejectionSymbol } = require('events');
-const { parse } = require('path');
+const path = require('path');
+
+const crypto = require('crypto');
+const mongoose = require('mongoose');
+const multer = require('multer');
+const GridFsStorage = require('multer-gridfs-storage');
+const Grid = require('gridfs-stream');
+const methodOverride = require('method-override');
+
 
 var url = 'mongodb://localhost:27017/complainbox';
+var mongoURI = 'mongodb://localhost:27017/picture';
 
 const TWO_HOUR = 1000 * 60 * 60 * 2;
 const {
@@ -28,6 +37,7 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(methodOverride('_method'));
 app.use(session({
 
    
@@ -44,6 +54,127 @@ app.use((req, res, next) => {
  
 })
 
+const conn = mongoose.createConnection(mongoURI);
+
+
+// Init gfs
+let gfs;
+
+conn.once('open', () => {
+  // Init stream
+  gfs = Grid(conn.db, mongoose.mongo);
+  gfs.collection('uploads');
+});
+// Create storage engine
+const storage = new GridFsStorage({
+    url: mongoURI,
+    file: (req, file) => {
+      return new Promise((resolve, reject) => {
+        crypto.randomBytes(16, (err, buf) => {
+          if (err) {
+            return reject(err);
+          }
+         // const filename = buf.toString('hex') + path.extname(file.originalname);
+          const filename = session.Studentemail;
+          const fileInfo = {
+           
+            filename: filename,
+            bucketName: 'uploads'
+          };
+          resolve(fileInfo);
+        });
+      });
+    }
+  });
+  const upload = multer({ storage });
+  // @route GET /
+// @desc Loads form
+app.get('/pic', (req, res) => {
+    gfs.files.find().toArray((err, files) => {
+      // Check if files
+      if (!files || files.length === 0) {
+        res.render('index', { files: false });
+      } else {
+        files.map(file => {
+          if (
+            file.contentType === 'image/jpeg' ||
+            file.contentType === 'image/png'
+          ) {
+            file.isImage = true;
+          } else {
+            file.isImage = false;
+          }
+        });
+        res.render('profile', { files: files });
+      }
+    });
+  });
+
+  // @route POST /upload
+// @desc  Uploads file to DB
+app.post('/pic/upload', upload.single('file'), (req, res) => {
+    // res.json({ file: req.file });
+    res.redirect('/pic');
+  });
+  
+  // @route GET /files
+  // @desc  Display all files in JSON
+  app.get('/pic/files', (req, res) => {
+    gfs.files.find().toArray((err, files) => {
+      // Check if files
+      if (!files || files.length === 0) {
+        return res.status(404).json({
+          err: 'No files exist'
+        });
+      }
+  
+      // Files exist
+      return res.json(files);
+    });
+  });
+
+
+  app.get('/files/:filename', (req, res) => {
+    gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+      // Check if file
+      if (!file || file.length === 0) {
+        return res.status(404).json({
+          err: 'No file exists'
+        });
+      }
+      // File exists
+      return res.json(file);
+    });
+  });
+  
+  // @route GET /image/:filename
+  // @desc Display Image
+  app.get('/image/:filename', (req, res) => {
+    gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+      // Check if file
+      if (!file || file.length === 0) {
+        return res.status(404).json({
+          err: 'No file exists'
+
+        });
+      }
+  
+      // Check if image
+      if (file.contentType === 'image/jpeg' || file.contentType === 'image/png') {
+        // Read output to browser
+        const readstream = gfs.createReadStream(file.filename);
+        readstream.pipe(res);
+      } else {
+        res.status(404).json({
+          err: 'Not an image'
+        });
+      }
+    });
+  });
+
+
+///////////////////////////////////////////////////
+
 
 const redirectStudentlogin = (req, res, next) => {
     console.log(session);
@@ -54,7 +185,15 @@ const redirectStudentlogin = (req, res, next) => {
        return next();
     }
 }
-
+const redirectAdminlogin = (req, res, next) => {
+    console.log(session);
+    if (!session.adminId) {
+        res.redirect('/admin');
+    } else {
+        //res.redirect('/profile');
+       return next();
+    }
+}
 
 function makeid(length) {
     var result = '';
@@ -249,18 +388,106 @@ app.post('/admin',(req,res)=>{
    
 })
 
-app.post('/login',(req,res)=>{
+app.get('/studentlist',redirectAdminlogin,async(req,res)=>{
+
+
+    mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
+        var db = client.db('complainbox');
+               var [student] = await Promise.all([
+                   db.collection('student').find({}).toArray()
+               ]);    
+                    
+               console.log(student);
+                  
+              
+                  
+            //        var text="";
+            //        for (var i = result.length-1; i>=0; i--) {
+                    
+            //         text += "<h1>" + result[i].complaintopic + "</h1>";
+            //         text+="<p>Date: "+result[i].date+"  "; 
+            //         text+="Time: "+result[i].time+"</p>";
+            //         text+="<br>";
+            //         text += "<p>:" +result[i].discription+"</p>";
+                    
+                   
+        
+                 
+            //        if(session.studentId!=null && like!=null){
+                       
+                    
+            //             var check = true;
+            //             for(var j=0; j<like.length; j++){
+                           
+            //                  if(like[j].voterId===session.studentId && like[j].complainId===result[i].key){
+                        
+            //                  text+="<button class=\"btn1\" href=\"/like\"><i class=\"fa fa-thumbs-up\">Liked</i> </button>";
+            //                  //text += "<hr>";
+                    
+            //                  check = false;
+            //                  break;
+            //                  }
+                      
+            //               }
+            //               console.log(i+ "   " +check)
+            //             if(check){
+            //                 text+=" <a class=\"btn\" href=\"/like/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Like</i> </a>";
+            //                 //text += "<hr>";
+            //             }
+            //        }
+            //        else{
+            //         text+=" <a class=\"btn\" href=\"/like/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Like</i> </a>";
+            //         //text += "<hr>";
+            //        }
+                
+            //        console.log('render dashboard');
+            //        if(result[i].count!="0")text+="<a>"+result[i].count+" People like this!</a>";
+                   
+            //        text+="<hr>"
+                   
+            //        //client.close();
+                   
+            //    }
+
+           res.render('studentList', { students: student});
+           console.log('DB Connected!')
+        }).catch(err => {
+            console.log(err);
+        });
 
 })
 
+app.post('/login',(req,res)=>{
+
+})
 app.get('/profile',redirectStudentlogin,(req,res)=>{
-    console.log(req.session.name);
-    res.render('profile',{
+
+    gfs.files.findOne({ filename: session.Studentemail }, (err, file) => {
+
+         res.render('profile',{
+        files: file,
         name: session.studentname,
         email: session.Studentemail,
         registration: session.registration
     });
+        
+      });
+    
 })
+
+// app.get('/profile',redirectStudentlogin,(req,res)=>{
+   
+//     res.render('profile',{
+        
+//         name: session.studentname,
+//         email: session.Studentemail,
+//         registration: session.registration
+//     });
+// })
+
+
+
+
 
 app.get('/addcomplain',(req,res)=>{
     res.render('complain');
@@ -416,4 +643,4 @@ app.get('/logout', function (req, res) {
 
 });
 
-app.listen(3001)
+app.listen(3000)

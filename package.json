@@ -17,6 +17,11 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "express-validator": "^6.9.1",
-    "mongodb": "^3.6.3"
+    "gridfs-stream": "^1.1.1",
+    "method-override": "^3.0.0",
+    "mongodb": "^3.6.3",
+    "mongoose": "^5.12.12",
+    "multer": "^1.4.2",
+    "multer-gridfs-storage": "^4.2.0"
   }
 }

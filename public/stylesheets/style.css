@@ -144,3 +144,12 @@ a.active {
     font-size: 16px; /* Set a font size */
     cursor: pointer; /* Mouse pointer on hover */
   }
+  
+  
+  .circular--square {
+    right: 100px;
+    border-top-left-radius: 50% 50%;
+    border-top-right-radius: 50% 50%;
+    border-bottom-right-radius: 50% 50%;
+    border-bottom-left-radius: 50% 50%;
+  }
