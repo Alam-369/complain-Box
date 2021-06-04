@@ -105,7 +105,7 @@ app.get('/pic', (req, res) => {
             file.isImage = false;
           }
         });
-        res.render('profile', { files: files });
+        res.render('index', { files: files });
       }
     });
   });
@@ -236,10 +236,11 @@ app.get('/',async(req,res)=>{
                
                 var text="";
                 for (var i = result.length-1; i>=0; i--) {
-                 
-                 text += "<h1>" + result[i].complaintopic + "</h1>";
-                 text+="<p>Date: "+result[i].date+"  "; 
-                 text+="Time: "+result[i].time+"</p>";
+                
+                 text += "<div class=\"align_side\" ><img class=\"circular--square\" width=\"60\" height=\"50\" src=\"/image/user.jpg\" alt=\"\">";
+                 text += " &ensp;<h1>" + result[i].complaintopic + "</h1></div>";
+                 text+="<h6 class =\"text_size_h4\">Date: "+result[i].date+" &ensp;"; 
+                 text+="       Time: "+result[i].time+"</h6>";
                  text+="<br>";
                  text += "<p>:" +result[i].discription+"</p>";
                  
@@ -280,7 +281,7 @@ app.get('/',async(req,res)=>{
                 }
              
                 console.log('render dashboard');
-                if(result[i].count!="0")text+="<a>"+result[i].count+" People like this!</a>";
+                if(result[i].count!="0")text+=" &ensp;<a>"+result[i].count+" People like this!</a>";
                 
                 text+="<hr>"
                 
@@ -332,6 +333,19 @@ app.get('/',async(req,res)=>{
     }
 })
 
+
+app.get('/login',(req,res)=>{
+  console.log(session);
+    if(session.adminId!=null){
+        res.redirect('/addstudent');
+    }
+    else if(session.Studentemail!=null){
+        res.redirect('/profile');
+    }
+    else {
+        res.render('login');
+    }
+})
 
 app.get('/admin',(req,res)=>{
     console.log(session);
@@ -457,9 +471,7 @@ app.get('/studentlist',redirectAdminlogin,async(req,res)=>{
 
 })
 
-app.post('/login',(req,res)=>{
 
-})
 app.get('/profile',redirectStudentlogin,(req,res)=>{
 
     gfs.files.findOne({ filename: session.Studentemail }, (err, file) => {
