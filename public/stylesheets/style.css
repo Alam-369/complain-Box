@@ -1,21 +1,43 @@
 body {
-
+    background: url("/image/sust.jpg") no-repeat center center fixed;
     background-repeat: no-repeat;
+    background-size: cover;
+    /*
     background-attachment: fixed;
     background-size: cover;
-    background-color: rgb(106, 121, 143);
+     */
 
   }
+  .mainHome{
+    margin-top: 50px;
+  }
   .main{
-    background-image: url(image/vote_1.jpg);
+    
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: 100% 100%;
     margin-left:25%;
-    margin-top:50px;
+    margin-right: 20%;
     padding:1px 16px;
-    height:1000px
+    height:100%
     
+  }
+  .backG{
+    background-color: rgb(202, 214, 214);
+  }
+  .backG1{
+    width: 100%;
+    padding:1px 16px;
+    margin-top: 5px;
+    border-radius: 5px;
+    background-color: rgb(222, 235, 235);
+  }
+  .to-marg{
+    height: 1000px;
+    margin-top: 50px;
+  }
+  .marge{
+    margin-top: 50px;
   }
   .main h1{
     color: #272225;
@@ -39,7 +61,7 @@ body {
 
 a.active {
 
-    float: left;
+    
     color:white;
     padding: 14px 16px;
     font-size: 17px;
@@ -95,6 +117,8 @@ a.active {
     border-radius: 6px;
     font-size: 1.1em;
     border-color: linen;
+    margin-left: 4px;
+    margin-right: 4px;
     
   }
   .btn5{

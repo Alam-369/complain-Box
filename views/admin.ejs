@@ -4,54 +4,68 @@
 <head>
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="/stylesheets/style.css  " type="text/css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+		integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
 <body>
 	<!-- main -->
 	<div class="topnav">
-		<a  href="/"  class="text-white  h1 active">Complain Box</a>
-		<!-- <div class="topnav-right">
-		  <a href="register">SignUp</a>
-		  <a href="login">Login</a>
-		</div> -->
-	  </div>
-	  <div class="verticalnav">
+		<a href="/" class="text-white  float-left h1 active">Complain Box</a>
+		<%if(admin!=null){%>
+			<a href="/addstudent" class="float-right text-white active">admin</a>
+			<%}else if(student!=null){%>
+				<a href="/profile" class="float-right text-white active">
+					<%=student%>
+				</a>
+				<%}else{%>
+					<a href="/login" class="float-right text-white active">LogIn</a>
+					<%}%>
+	</div>
+	<!-- <div class="verticalnav">
 		<ul>
-		  <li><a href="/">Home</a></li>
-		  <li><a href="/admin">Admin</a></li>
-		  <li><a href="/studentlogin">Student</a></li>
+			<li><a href="/">Home</a></li>
+			<li><a href="/admin">Admin</a></li>
+			<li><a href="/studentlogin">Student</a></li>
 		</ul>
-	  </div>
-	<div class="main-w3layouts wrapper" style="margin-left:25%;margin-top:50px;padding:1px 16px;height:1000px;"><center>
-		
-			
-					<div class="round">
-						<h1>Admin Login</h1>
-						<form action="/admin" method="post"> <br>
-							<div class="container">
-								
-								<label name = "nid"class="col-sm-2 col-form-label">Email:  </label>
-								<input class=" form-control" type="email" name="Email" placeholder="Email" required="">
-							</div>
+	</div> -->
+	<div class="main-w3layouts wrapper" style="margin-left:25%;margin-top:50px;padding:1px 16px;height:1000px;">
+		<center>
 
-						  <br>
-						  <div class="container1">
-							<label name = "nid"class="col-sm-2 col-form-label">Passward:  </label>
-							<input class="form-control" type="password" name="Password" placeholder="Password"required=""><br><br>
-						  </div>
-						  <input class="btn" type="submit" value="LogIn"><br><br>
-						  
-                        
-							
-						</form>
+
+			<div class="round">
+				<h1>Admin Login</h1>
+				<form action="/admin" method="post"> <br>
+					<div class="container">
+
+						<label name="nid" class="col-sm-2 col-form-label">Email: </label>
+						<input class=" form-control" type="email" name="Email" placeholder="Email" required="">
 					</div>
-			
-          </center>
-		</div>
-		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+					<br>
+					<div class="container1">
+						<label name="nid" class="col-sm-2 col-form-label">Passward: </label>
+						<input class="form-control" type="password" name="Password" placeholder="Password"
+							required=""><br><br>
+					</div>
+					<input class="btn" type="submit" value="LogIn"><br><br>
+
+
+
+				</form>
+			</div>
+
+		</center>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+		integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+		integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+		crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+		integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+		crossorigin="anonymous"></script>
 </body>
 
 </html>

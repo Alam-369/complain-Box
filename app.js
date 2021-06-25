@@ -74,7 +74,7 @@ const storage = new GridFsStorage({
           if (err) {
             return reject(err);
           }
-         // const filename = buf.toString('hex') + path.extname(file.originalname);
+          //const filename = buf.toString('hex') + path.extname(file.originalname);
           const filename = session.Studentemail;
           const fileInfo = {
            
@@ -105,16 +105,17 @@ app.get('/pic', (req, res) => {
             file.isImage = false;
           }
         });
-        res.render('index', { files: files });
-      }
+        session.currentStudent=req.params.id
+        res.render('index', { files: files});
+      } 
     });
   });
 
   // @route POST /upload
 // @desc  Uploads file to DB
 app.post('/pic/upload', upload.single('file'), (req, res) => {
-    // res.json({ file: req.file });
-    res.redirect('/pic');
+   // res.json({ file: req.file });
+    res.redirect('/');
   });
   
   // @route GET /files
@@ -171,7 +172,16 @@ app.post('/pic/upload', upload.single('file'), (req, res) => {
       }
     });
   });
-
+  app.delete('/files/:id', (req, res) => {
+    gfs.remove({ _id: req.params.id, root: 'uploads' }, (err, gridStore) => {
+      if (err) {
+        return res.status(404).json({ err: err });
+      }
+  
+      res.redirect('/pic');
+    });
+  });
+  
 
 ///////////////////////////////////////////////////
 
@@ -179,7 +189,7 @@ app.post('/pic/upload', upload.single('file'), (req, res) => {
 const redirectStudentlogin = (req, res, next) => {
     console.log(session);
     if (!session.studentId) {
-        res.redirect('/studentlogin');
+        res.redirect('/login');
     } else {
         //res.redirect('/profile');
        return next();
@@ -188,7 +198,7 @@ const redirectStudentlogin = (req, res, next) => {
 const redirectAdminlogin = (req, res, next) => {
     console.log(session);
     if (!session.adminId) {
-        res.redirect('/admin');
+        res.redirect('/login');
     } else {
         //res.redirect('/profile');
        return next();
@@ -209,7 +219,7 @@ function makeid(length) {
 
 function setDate()
 {
-     var date = new Date();
+    var date = new Date();
 
     var DD = date.getFullYear() + "-" + (date.getMonth()<10?'0':'') + (date.getMonth() + 1) + "-" + (date.getDate()<10?'0':'') + date.getDate();
     return DD;
@@ -223,7 +233,11 @@ function setTime(){
 app.get('/',async(req,res)=>{
    
 
-
+    var user, type;
+    if(!session.adminId)user = session.adminId, type = "admin";
+    else if(!session.studentId)user = session.studentname, type = "student";
+    else user = "";
+    console.log(user+"hahah");
     mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
      var db = client.db('complainbox');
             var [result,like] = await Promise.all([
@@ -237,7 +251,7 @@ app.get('/',async(req,res)=>{
                 var text="";
                 for (var i = result.length-1; i>=0; i--) {
                 
-                 text += "<div class=\"align_side\" ><img class=\"circular--square\" width=\"60\" height=\"50\" src=\"/image/user.jpg\" alt=\"\">";
+                 text += "<div class=\"align_side\" ><img class=\"circular--square\" width=\"60\" height=\"50\" src=\"/image/sust.jpg\" alt=\"\">";
                  text += " &ensp;<h1>" + result[i].complaintopic + "</h1></div>";
                  text+="<h6 class =\"text_size_h4\">Date: "+result[i].date+" &ensp;"; 
                  text+="       Time: "+result[i].time+"</h6>";
@@ -288,7 +302,7 @@ app.get('/',async(req,res)=>{
                 //client.close();
                 
             }
-            res.render('home', { text: text});
+         res.render('home', {text: text, admin: session.adminId, student: session.studentname});
         console.log('DB Connected!')
      }).catch(err => {
          console.log(err);
@@ -343,35 +357,31 @@ app.get('/login',(req,res)=>{
         res.redirect('/profile');
     }
     else {
-        res.render('login');
+         
+        res.render('login',{admin: session.adminId, student: session.studentname});
     }
 })
 
-app.get('/admin',(req,res)=>{
-    console.log(session);
-    if(session.adminId!=null){
-        res.redirect('/addstudent');
-    }
-    else {
-        res.render('admin');
-    }
-})
-app.post('/admin',(req,res)=>{
-    var email = req.body.Email;
-    var password = req.body.Password;
-    
+app.post('/login',(req,res)=>{
+     var user = req.body.user;
+     console.log(user);
+     if(user=="admin"){
 
-    mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
+      var email = req.body.username;
+      var password = req.body.Password;
+      mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
         var db = client.db('complainbox');
         
-                db.collection('admin').findOne({"Email":req.body.Email},(err,result)=>{
+                db.collection('admin').findOne({"Email":req.body.username},(err,result)=>{
                   try{ assert.equal(null,err);
-                   assert.equal(req.body.Email,result.Email);
+                   assert.equal(req.body.username,result.Email);
                    
                    assert.equal(req.body.Password,result.Password);
                    
                    console.log("found!!!!"+ result._id);
                    session.adminId=result._id;
+                   
+                   session.currentStudent=null;
                    
                    
                    res.redirect('/addstudent');
@@ -384,7 +394,7 @@ app.post('/admin',(req,res)=>{
                     session.Studentemail=null;
                     session.adminId=null;
                       console.log(e);
-                      res.redirect('/admin');
+                      res.redirect('/login');
                   }
                    
                })
@@ -398,8 +408,99 @@ app.post('/admin',(req,res)=>{
           console.log(err);
 
         });
+
+     }else{
+
+      mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
+        var db = client.db('complainbox');
+               db.collection('student').findOne({"registration":req.body.username},(err,result)=>{
+                   try{
+                   assert.equal(null,err);
+                   assert.equal(req.body.username,result.registration);
+                   assert.equal(req.body.Password,result.password);
+                   console.log("found!!!!"+ result.password); 
+                   session.studentId=result.key;
+                   session.studentname = result.name;
+                   session.registration=result.registration; 
+                   session.Studentemail=result.email;
+                   
+                   res.redirect('/profile');
+                   client.close();
+                   }catch(e){
+                    session.studentId=null;
+                    session.studentname = null;
+                    session.registration= null; 
+                    session.Studentemail= null;
+                    res.redirect('/login');
+                    client.close();
+                   }
+                   
+               });
+           console.log('DB Connected!')
+        }).catch(err => {
+            console.log(err);
+        });
+
+     }
+})
+
+
+// app.get('/admin',(req,res)=>{
+//     console.log(session);
+//     if(session.adminId!=null){
+//         res.redirect('/addstudent');
+//     }
+//     else {
+//         res.render('admin',{admin: session.adminId, student: session.studentname});
+//     }
+// })
+// app.post('/admin',(req,res)=>{
+//     var email = req.body.Email;
+//     var password = req.body.Password;
+    
+
+//     mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
+//         var db = client.db('complainbox');
+        
+//                 db.collection('admin').findOne({"Email":req.body.Email},(err,result)=>{
+//                   try{ assert.equal(null,err);
+//                    assert.equal(req.body.Email,result.Email);
+                   
+//                    assert.equal(req.body.Password,result.Password);
+                   
+//                    console.log("found!!!!"+ result._id);
+//                    session.adminId=result._id;
+                   
+                   
+//                    res.redirect('/addstudent');
+//                    client.close();
+//                   }
+//                   catch(e){
+//                     session.studentId=null;
+//                     session.studentname = null;
+//                     session.registration=null;
+//                     session.Studentemail=null;
+//                     session.adminId=null;
+//                       console.log(e);
+//                       res.redirect('/admin');
+//                   }
+                   
+//                })
+           
+
+            
+//            console.log('DB Connecmted!')
+//         }).catch(err => {
+            
+            
+//           console.log(err);
+
+//         });
     
    
+// })
+app.get('/studentlist/:id',redirectAdminlogin,(req,res)=>{
+
 })
 
 app.get('/studentlist',redirectAdminlogin,async(req,res)=>{
@@ -415,55 +516,9 @@ app.get('/studentlist',redirectAdminlogin,async(req,res)=>{
                   
               
                   
-            //        var text="";
-            //        for (var i = result.length-1; i>=0; i--) {
-                    
-            //         text += "<h1>" + result[i].complaintopic + "</h1>";
-            //         text+="<p>Date: "+result[i].date+"  "; 
-            //         text+="Time: "+result[i].time+"</p>";
-            //         text+="<br>";
-            //         text += "<p>:" +result[i].discription+"</p>";
-                    
-                   
-        
-                 
-            //        if(session.studentId!=null && like!=null){
-                       
-                    
-            //             var check = true;
-            //             for(var j=0; j<like.length; j++){
-                           
-            //                  if(like[j].voterId===session.studentId && like[j].complainId===result[i].key){
-                        
-            //                  text+="<button class=\"btn1\" href=\"/like\"><i class=\"fa fa-thumbs-up\">Liked</i> </button>";
-            //                  //text += "<hr>";
-                    
-            //                  check = false;
-            //                  break;
-            //                  }
-                      
-            //               }
-            //               console.log(i+ "   " +check)
-            //             if(check){
-            //                 text+=" <a class=\"btn\" href=\"/like/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Like</i> </a>";
-            //                 //text += "<hr>";
-            //             }
-            //        }
-            //        else{
-            //         text+=" <a class=\"btn\" href=\"/like/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Like</i> </a>";
-            //         //text += "<hr>";
-            //        }
-                
-            //        console.log('render dashboard');
-            //        if(result[i].count!="0")text+="<a>"+result[i].count+" People like this!</a>";
-                   
-            //        text+="<hr>"
-                   
-            //        //client.close();
-                   
-            //    }
+            
 
-           res.render('studentList', { students: student});
+          res.render('studentList', { students: student,admin: session.adminId, student: session.studentname});
            console.log('DB Connected!')
         }).catch(err => {
             console.log(err);
@@ -472,18 +527,106 @@ app.get('/studentlist',redirectAdminlogin,async(req,res)=>{
 })
 
 
-app.get('/profile',redirectStudentlogin,(req,res)=>{
+app.get('/profile',redirectStudentlogin,async(req,res)=>{
 
-    gfs.files.findOne({ filename: session.Studentemail }, (err, file) => {
+  mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
+    var db = client.db('complainbox');
+           var [result,like] = await Promise.all([
+               db.collection('complains').find({"complainerId":session.studentId}).toArray(),
+               db.collection('like').find({}).toArray(),
+           ]);    
+                
+              
+          
+              
+               var text="";
+               for (var i = result.length-1; i>=0; i--) {
+                 console.log("1 "+result[i].voterId);
+               
+                text += "<div class=\"align_side backG1\" ><img class=\"circular--square\" width=\"60\" height=\"50\" src=\"/image/sust1.jpg\" alt=\"\">";
+                text += " &ensp;<h1>" + result[i].complaintopic + "</h1></div>";
+                text+="<h6 class =\"text_size_h4\">Date: "+result[i].date+" &ensp;"; 
+                text+="       Time: "+result[i].time+"</h6>";
+                text+="<br>";
+                text += "<p>:" +result[i].discription+"</p>";
+                
+                
+                // text+=" <a href=\"#\"><span class=\"glyphicon glyphicon-thumbs-up\"></span></a>"
+               
+                // text+="<div class=\"form-check-inline\"><label class=\"form-check-label\"\><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Agree</label><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Disagree</label></div>";
+    
+             
+               if(session.studentId!=null && like!=null){
+                   
+                
+                    var check = true;
+                    for(var j=0; j<like.length; j++){
+                       // console.log(like[j].voterId);
+                        // console.log(session.studentId+"jjjj");
+                        // console.log(like[j].complaconsole.log(session.studentId+"jjjj");
+                        // console.log(like[j].complainId+"JJJ"+result[i].key)inId+"JJJ"+result[i].key)
+                         if(like[j].voterId===session.studentId && like[j].complainId===result[i].key){
+                    
+                         text+="<button class=\"btn1\" href=\"/like\"><i class=\"fa fa-thumbs-up\">Liked</i> </button>";
+                         //text += "<hr>";
+                
+                         check = false;
+                         break;
+                         }
+                  
+                      }
+                      console.log(i+ "   " +check)
+                    if(check){
+                        text+=" <a class=\"btn\" href=\"/like/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Like</i> </a>";
+                        //text += "<hr>";
+                    }
+               }
+               else{
+                text+=" <a class=\"btn\" href=\"/like/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Like</i> </a>";
+                //text += "<hr>";
+               }
+            
+               console.log('render dashboard');
+               if(result[i].count!="0")text+=" &ensp;<a>"+result[i].count+" People like this!</a>";
+               
+               text+="<hr>"
+               
+               //client.close();
+               
+           }
+           console.log(text+"hdsikj");
+           gfs.files.findOne({ filename: session.Studentemail }, (err, file) => {
 
-         res.render('profile',{
-        files: file,
-        name: session.studentname,
-        email: session.Studentemail,
-        registration: session.registration
+            res.render('profile',{
+              text: text,
+           files: file,
+           name: session.studentname,
+           email: session.Studentemail,
+           registration: session.registration,
+           admin: session.adminId,
+            student: session.studentname
+          });
+           
+         });
+        //res.render('home', {text: text, admin: session.adminId, student: session.studentname});
+       console.log('DB Connected!')
+    }).catch(err => {
+        console.log(err);
     });
+    //res.redirect('/addcomplain'); 
+
+    // gfs.files.findOne({ filename: session.Studentemail }, (err, file) => {
+
+    //      res.render('profile',{
+    //     files: file,
+    //     name: session.studentname,
+    //     email: session.Studentemail,
+    //     registration: session.registration,
+    //     admin: session.adminId,
+    //      student: session.studentname
+    // });
         
-      });
+    //   });
     
 })
 
@@ -502,10 +645,10 @@ app.get('/profile',redirectStudentlogin,(req,res)=>{
 
 
 app.get('/addcomplain',(req,res)=>{
-    res.render('complain');
+    res.render('complain',{admin: session.adminId, student: session.studentname});
 })
 app.get('/addstudent',(req,res)=>{
-    res.render('addstudent');
+    res.render('addstudent',{admin: session.adminId, student: session.studentname});
 })
 app.get('/studentlogin',(req,res)=>{
     console.log(session);
@@ -514,7 +657,7 @@ app.get('/studentlogin',(req,res)=>{
     }
     else {
     
-    res.render('studentlogin');
+    res.render('studentlogin',{admin: session.adminId, student: session.studentname});
     }
 })
 app.post('/studentlogin',(req,res)=>{
@@ -566,6 +709,7 @@ app.post('/addcomplain',(req,res)=>{
        count:"0",
        compare: date+"::"+time,
        discription: req.body.comment,
+       complainerId: session.studentId,
        key : makeid(20)
    }
    var date = new Date();
@@ -616,7 +760,7 @@ app.get('/changepassword',(req,res)=>{
     if(session.studentId==null){
         res.redirect('/studentlogin');
     }
-    res.render('changepassword');
+    res.render('changepassword',{admin: session.adminId, student: session.studentname});
 });
 
 app.post('/changepassword',async(req,res)=>{

@@ -11,19 +11,25 @@
 <body>
   <!-- main -->
   <div class="topnav">
-    <a  href="/"  class="text-white  h1 active">Complain Box</a>
-    <!-- <div class="topnav-right">
-      <a href="register">SignUp</a>
-      <a href="login">Login</a>
-    </div> -->
+    <a href="/" class="text-white  float-left h1 active">Complain Box</a>
+    <%if(admin!=null){%>
+      <a href="/addstudent" class="float-right text-white active">admin</a>
+      <a href="/logout" class="float-right text-white active">LogOut</a>
+      <%}else if(student!=null){%>
+        <a href="/profile" class="float-right text-white active">
+          <%=student%>
+        </a>
+        <%}else{%>
+          <a href="/login" class="float-right text-white active">LogIn</a>
+          <%}%>
   </div>
-  <div class="verticalnav">
+  <!-- <div class="verticalnav">
     <ul>
       <li><a href="/">Home</a></li>
       <li><a href="/admin">Admin</a></li>
       <li><a href="/studentlogin">Student</a></li>
     </ul>
-  </div>
+  </div> -->
    <div style="margin-left:25%;margin-top:50px;padding:10px 60px;height:1000px;">
     <center>
      
