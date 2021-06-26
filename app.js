@@ -257,9 +257,11 @@ app.get('/',async(req,res)=>{
     console.log(user+"hahah");
     mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
      var db = client.db('complainbox');
-            var [result,like] = await Promise.all([
+            var [result,like, registerfeedback,proctorfeedback] = await Promise.all([
                 db.collection('complains').find({}).toArray(),
                 db.collection('like').find({}).toArray(),
+                db.collection('RegisterFeedBack').find({}).toArray(),
+                db.collection('ProctorFeedBack').find({}).toArray()
             ]);    
                  
                
@@ -330,7 +332,35 @@ app.get('/',async(req,res)=>{
             }else{
               text+="<label class=\"container11\">Proctor<input type=\"checkbox\" disabled=\"disabled\"><span class=\"checkmark\"></span></label>"
             }
-                
+            if(registerfeedback){
+              var text1="", k=0
+              text1+="<h5>Register Feed Back: </h5>"
+              text1+="<div class=\"container1\">"
+              for(var j=0; j<registerfeedback.length;j++){
+                if(registerfeedback[j].complainId==result[i].key){
+                  k++;
+                  text1+="<p>"+(j+1)+". "+registerfeedback[j].feedback+"</p>"
+                }
+              }
+              text1+="</div>"
+              if(k)text+=text1
+            }
+            text+="<br>"
+            if(proctorfeedback){
+              var text1="",k=0
+              text1+="<h5>Proctor Body Feed Back: </h5>"
+              text1+="<div class=\"container1\">"
+              for(var j=0; j<proctorfeedback.length;j++){
+                if(proctorfeedback[j].complainId==result[i].key){
+                  k++;
+                  text1+="<p>"+(j+1)+". "+proctorfeedback[j].feedback+"</p>"
+                }
+              }
+              text1+="</div>"
+              if(k)text+=text1
+            }
+
+
                 text+="<hr>"
                 
                 //client.close();
@@ -455,7 +485,14 @@ app.get('/approveRegister',redirectRegister,(req,res)=>{
                  text+="<br>";
                  text += "<p>" +result[i].discription+"</p>";
                  text+=" <a class=\"btn\" href=\"/rapprove/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Approve</i> </a>";
+                 text+=" <form action=\"/addregisterfeedback/"+result[i].key+"\" method=\"POST\" id = \"katha\">"
                  
+                 text+="<div style=\"text-align: left;margin-left: 40px; margin-right: 0;\">"
+                 text+="<label>Add Feedback: </label><br><br>"
+                 text+="<textarea class=\"form-control\" rows=\"8\" cols=\"50\" name=\"comment\" form=\"katha\"placeholder=\"Enter text here...\"></textarea><br><br>"
+                 text+="</div>"
+                 text+="<input class=\"btn\" type=\"submit\" value=\"Add\"><br><br>"
+                 text+="</form>"
                  
                  // text+=" <a href=\"#\"><span class=\"glyphicon glyphicon-thumbs-up\"></span></a>"
                 
@@ -472,6 +509,46 @@ app.get('/approveRegister',redirectRegister,(req,res)=>{
          console.log(err);
      });
 
+})
+app.post('/addregisterfeedback/:id',(req,res)=>{
+  var Feedback={
+     user: "Register",
+     complainId: req.params.id,
+     feedback: req.body.comment
+  }
+  console.log(Feedback)
+  mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
+    var db = client.db('complainbox');
+           db.collection('RegisterFeedBack').insertOne(Feedback,(err,result)=>{
+               assert.equal(null,err);
+               console.log("inserted!!!!");
+               client.close();
+           });
+       console.log('DB Connected!')
+    }).catch(err => {
+        console.log(err);
+    });
+    res.redirect('/approveRegister')
+})
+app.post('/addproctorfeedback/:id',(req,res)=>{
+  var Feedback={
+     user: "Proctor",
+     complainId: req.params.id,
+     feedback: req.body.comment
+  }
+  console.log(Feedback)
+  mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
+    var db = client.db('complainbox');
+           db.collection('ProctorFeedBack').insertOne(Feedback,(err,result)=>{
+               assert.equal(null,err);
+               console.log("inserted!!!!");
+               client.close();
+           });
+       console.log('DB Connected!')
+    }).catch(err => {
+        console.log(err);
+    });
+    res.redirect('/approveProctor')
 })
 app.get('/approveProctor',redirectProctor,(req,res)=>{
 
@@ -497,7 +574,14 @@ app.get('/approveProctor',redirectProctor,(req,res)=>{
                  text += "<p>" +result[i].discription+"</p>";
                  text+=" <a class=\"btn\" href=\"/papprove/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Approve</i> </a>";
                  
+                 text+=" <form action=\"/addproctorfeedback/"+result[i].key+"\" method=\"POST\" id = \"katha\">"
                  
+                 text+="<div style=\"text-align: left;margin-left: 40px; margin-right: 0;\">"
+                 text+="<label>Add Feedback: </label><br><br>"
+                 text+="<textarea class=\"form-control\" rows=\"8\" cols=\"50\" name=\"comment\" form=\"katha\"placeholder=\"Enter text here...\"></textarea><br><br>"
+                 text+="</div>"
+                 text+="<input class=\"btn\" type=\"submit\" value=\"Add\"><br><br>"
+                 text+="</form>"
                  // text+=" <a href=\"#\"><span class=\"glyphicon glyphicon-thumbs-up\"></span></a>"
                 
                  // text+="<div class=\"form-check-inline\"><label class=\"form-check-label\"\><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Agree</label><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Disagree</label></div>";
@@ -752,9 +836,11 @@ app.get('/profile',redirectStudentlogin,async(req,res)=>{
 
   mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
     var db = client.db('complainbox');
-           var [result,like] = await Promise.all([
+           var [result,like,registerfeedback,proctorfeedback] = await Promise.all([
                db.collection('complains').find({"complainerId":session.studentId}).toArray(),
                db.collection('like').find({}).toArray(),
+               db.collection('RegisterFeedBack').find({}).toArray(),
+               db.collection('ProctorFeedBack').find({}).toArray()
            ]);    
                 
               
@@ -809,6 +895,54 @@ app.get('/profile',redirectStudentlogin,async(req,res)=>{
             
                console.log('render dashboard');
                if(result[i].count!="0")text+=" &ensp;<a>"+result[i].count+" People like this!</a>";
+
+               text+="<br><br>"
+                text+="<label>Approved:&ensp;&ensp;</label>"
+                if(result[i].register==true){
+                  text+="<label class=\"inputColor\">Register<input class=\"inputColor\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\"><span class=\"checkmark\"></span></label>"
+                  //text+="<input class=\"color\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\">";
+                
+              }else{
+                text+="<label class=\"container11\">Register<input type=\"checkbox\" disabled=\"disabled\"><span class=\"checkmark\"></span></label>"
+              }
+              text+="&ensp;&ensp;&ensp;&ensp;"
+              if(result[i].proctor==true){
+                text+="<label class=\"inputColor\">Proctor<input class=\"inputColor\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\"><span class=\"checkmark\"></span></label>"
+                //text+="<input class=\"color\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\">";
+              
+            }else{
+              text+="<label class=\"container11\">Proctor<input type=\"checkbox\" disabled=\"disabled\"><span class=\"checkmark\"></span></label>"
+            }
+            if(registerfeedback){
+              var text1="", k=0
+              text1+="<h5>Register Feed Back: </h5>"
+              text1+="<div class=\"container1\">"
+              for(var j=0; j<registerfeedback.length;j++){
+                if(registerfeedback[j].complainId==result[i].key){
+                  k++;
+                  text1+="<p>"+(j+1)+". "+registerfeedback[j].feedback+"</p>"
+                }
+              }
+              text1+="</div>"
+              if(k)text+=text1
+            }
+            text+="<br>"
+            if(proctorfeedback){
+              var text1="",k=0
+              text1+="<h5>Proctor Body Feed Back: </h5>"
+              text1+="<div class=\"container1\">"
+              for(var j=0; j<proctorfeedback.length;j++){
+                if(proctorfeedback[j].complainId==result[i].key){
+                  k++;
+                  text1+="<p>"+(j+1)+". "+proctorfeedback[j].feedback+"</p>"
+                }
+              }
+              text1+="</div>"
+              if(k)text+=text1
+            }
+
+
+                
                
                text+="<hr>"
                

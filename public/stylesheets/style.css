@@ -229,7 +229,21 @@ a.active {
     -ms-user-select: none;
     user-select: none;
   }
-  
+  .container1{
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    font-style: normal;
+    border-radius: 5px;
+    background-color: rgb(235, 232, 232);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
   /* Hide the browser's default checkbox */
   .container input {
     position: absolute;
