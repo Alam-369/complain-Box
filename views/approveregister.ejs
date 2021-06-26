@@ -13,20 +13,22 @@
   <!-- main -->
   <div class="topnav">
     <a href="/" class="text-white  float-left h1 active">Complain Box</a>
+
     <%if(admin!=null){%>
       <a href="/logout" class="float-right text-white active">LogOut</a>
       <a href="/addstudent" class="float-right text-white active">Add Student</a>
-      <%}else if(student!=null){%>
+      <a href="/studentlist" class="float-right text-white active">Students List</a>
       
+      <%}else if(student!=null){%>
         <a href="/profile" class="float-right text-white active">
           <%=student%>
         </a>
         <%}else if(register!=null){%>
-          <a href="/logout" class="float-right text-white active">LogOut</a>
-       
-        <%}else if(proctor!=null){%>
-          <a href="/logout" class="float-right text-white active">LogOut</a>
-          
+            <a href="/logout" class="float-right text-white active">LogOut</a>
+         
+          <%}else if(proctor!=null){%>
+            <a href="/logout" class="float-right text-white active">LogOut</a>
+            
         <%}else{%>
           <a href="/login" class="float-right text-white active">LogIn</a>
           <%}%>
@@ -35,35 +37,18 @@
     <ul>
       <li><a href="/">Home</a></li>
       <li><a href="/admin">Admin</a></li>
-      <li><a href="/studentlogin">Student</a></li>
+      <li><a href="/studentlist">Students</a></li>
+      <li><a href="/logout">AdminLogout</a></li>
+
     </ul>
   </div> -->
-  <div class="main-w3layouts wrapper main">
+  
+  <div class="main-w3layouts wrapper" >
     <center>
 
-      <div class="round " style="padding: 50px;">
-        <h1> Login</h1><hr>
-        <form action="/login" method="POST">
-          <div class="align_para">
-            <p class="bold">Please select User:</p>
+      <div class="round main">
+        <%- text %>
 
-            <input type="radio" id="admin" name="user" value="admin">&ensp; Admin<br>
-            <input type="radio" id="admin" name="user" value="register">&ensp; Register<br>
-            <input type="radio" id="admin" name="user" value="proctor">&ensp; Proctor<br>
-            <input type="radio" id="student" name="user" value="student">&ensp; Student<br><br>
-
-
-
-            <label name="nid" class="bold">Registration Number/Email: </label><br>
-            <input class="text maxwidth" tyoe="text" name="username"
-              placeholder="Registration Number/Email"><br><br>
-
-            <label name="nid" class="bold">Passward: </label><br>
-            <input class="text maxwidth" type="password" name="Password" placeholder="Password" required=""><br>
-            <br>
-          </div>
-          <input type="submit" class="btn submit_type" value="LOGIN"> <a href="/user"></a>
-        </form>
       </div>
     </center>
   </div>

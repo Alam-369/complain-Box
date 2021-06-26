@@ -204,7 +204,24 @@ const redirectAdminlogin = (req, res, next) => {
        return next();
     }
 }
-
+const redirectRegister = (req,res,next)=>{
+  console.log(session);
+    if (!session.registerId) {
+        res.redirect('/login');
+    } else {
+        //res.redirect('/profile');
+       return next();
+    }
+}
+const redirectProctor = (req,res,next)=>{
+  console.log(session);
+    if (!session.proctorId) {
+        res.redirect('/login');
+    } else {
+        //res.redirect('/profile');
+       return next();
+    }
+}
 function makeid(length) {
     var result = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -256,7 +273,7 @@ app.get('/',async(req,res)=>{
                  text+="<h6 class =\"text_size_h4\">Date: "+result[i].date+" &ensp;"; 
                  text+="       Time: "+result[i].time+"</h6>";
                  text+="<br>";
-                 text += "<p>:" +result[i].discription+"</p>";
+                 text += "<p>" +result[i].discription+"</p>";
                  
                  
                  // text+=" <a href=\"#\"><span class=\"glyphicon glyphicon-thumbs-up\"></span></a>"
@@ -296,6 +313,23 @@ app.get('/',async(req,res)=>{
              
                 console.log('render dashboard');
                 if(result[i].count!="0")text+=" &ensp;<a>"+result[i].count+" People like this!</a>";
+                text+="<br><br>"
+                text+="<label>Approved:&ensp;&ensp;</label>"
+                if(result[i].register==true){
+                  text+="<label class=\"inputColor\">Register<input class=\"inputColor\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\"><span class=\"checkmark\"></span></label>"
+                  //text+="<input class=\"color\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\">";
+                
+              }else{
+                text+="<label class=\"container11\">Register<input type=\"checkbox\" disabled=\"disabled\"><span class=\"checkmark\"></span></label>"
+              }
+              text+="&ensp;&ensp;&ensp;&ensp;"
+              if(result[i].proctor==true){
+                text+="<label class=\"inputColor\">Proctor<input class=\"inputColor\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\"><span class=\"checkmark\"></span></label>"
+                //text+="<input class=\"color\" type=\"checkbox\" disabled=\"disabled\" checked=\"checked\">";
+              
+            }else{
+              text+="<label class=\"container11\">Proctor<input type=\"checkbox\" disabled=\"disabled\"><span class=\"checkmark\"></span></label>"
+            }
                 
                 text+="<hr>"
                 
@@ -312,10 +346,61 @@ app.get('/',async(req,res)=>{
  
    
  });
+ app.get('/papprove/:id',async(req,res)=>{
+  if(!session.proctorId){
+    res.redirect('/login');
+}
+else{
+    var like = { 
+        voterId: session.studentId,
+        complainId: req.params.id
+    }
+
+    mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
+        var db = client.db('complainbox');
+        var [result] = await Promise.all([
+            db.collection('complains').findOne({key:req.params.id})
+            //db.collection('like').find({}).toArray(),
+        ]);    
+             
+           db.collection('complains').update({_id:result._id},{ $set: { proctor:true}});
+           res.redirect('/approveProctor')
+           console.log('DB Connected!')
+        }).catch(err => {
+            console.log(err);
+        });
+}
+ })
+ 
+ app.get('/rapprove/:id',async(req,res)=>{
+  if(!session.registerId){
+    res.redirect('/login');
+}
+else{
+    var like = { 
+        voterId: session.studentId,
+        complainId: req.params.id
+    }
+
+    mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
+        var db = client.db('complainbox');
+        var [result] = await Promise.all([
+            db.collection('complains').findOne({key:req.params.id})
+            //db.collection('like').find({}).toArray(),
+        ]);    
+             
+           db.collection('complains').update({_id:result._id},{ $set: { register:true}});
+           res.redirect('/approveRegister')
+           console.log('DB Connected!')
+        }).catch(err => {
+            console.log(err);
+        });
+}
+ })
 
  app.get('/like/:id',async(req,res)=>{
     if(!session.studentId){
-        res.redirect('/studentlogin');
+        res.redirect('/login');
     }
     else{
         var like = { 
@@ -347,18 +432,106 @@ app.get('/',async(req,res)=>{
     }
 })
 
+app.get('/approveRegister',redirectRegister,(req,res)=>{
+
+
+  mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
+     var db = client.db('complainbox');
+            var [result,like] = await Promise.all([
+                db.collection('complains').find({"register":false}).toArray(),
+                db.collection('like').find({}).toArray(),
+            ]);    
+                 
+               
+           
+               
+                var text="";
+                for (var i = result.length-1; i>=0; i--) {
+                
+                 text += "<div class=\"align_side\" ><img class=\"circular--square\" width=\"60\" height=\"50\" src=\"/image/sust.jpg\" alt=\"\">";
+                 text += " &ensp;<h1>" + result[i].complaintopic + "</h1></div>";
+                 text+="<h6 class =\"text_size_h4\">Date: "+result[i].date+" &ensp;"; 
+                 text+="       Time: "+result[i].time+"</h6>";
+                 text+="<br>";
+                 text += "<p>" +result[i].discription+"</p>";
+                 text+=" <a class=\"btn\" href=\"/rapprove/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Approve</i> </a>";
+                 
+                 
+                 // text+=" <a href=\"#\"><span class=\"glyphicon glyphicon-thumbs-up\"></span></a>"
+                
+                 // text+="<div class=\"form-check-inline\"><label class=\"form-check-label\"\><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Agree</label><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Disagree</label></div>";
+     
+              
+                
+                //client.close();
+                
+            }
+         res.render('approveregister', {text: text, admin: session.adminId, student: session.studentname, register:session.registerId, proctor:session.proctorId});
+        console.log('DB Connected!')
+     }).catch(err => {
+         console.log(err);
+     });
+
+})
+app.get('/approveProctor',redirectProctor,(req,res)=>{
+
+
+  mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then(async(client) => {
+     var db = client.db('complainbox');
+            var [result,like] = await Promise.all([
+                db.collection('complains').find({"register":true,proctor:false}).toArray(),
+                //db.collection('like').find({}).toArray(),
+            ]);    
+                 
+               
+           
+               
+                var text="";
+                for (var i = result.length-1; i>=0; i--) {
+                
+                 text += "<div class=\"align_side\" ><img class=\"circular--square\" width=\"60\" height=\"50\" src=\"/image/sust.jpg\" alt=\"\">";
+                 text += " &ensp;<h1>" + result[i].complaintopic + "</h1></div>";
+                 text+="<h6 class =\"text_size_h4\">Date: "+result[i].date+" &ensp;"; 
+                 text+="       Time: "+result[i].time+"</h6>";
+                 text+="<br>";
+                 text += "<p>" +result[i].discription+"</p>";
+                 text+=" <a class=\"btn\" href=\"/papprove/"+ result[i].key +"/\"><i class=\"fa fa-thumbs-up\">Approve</i> </a>";
+                 
+                 
+                 // text+=" <a href=\"#\"><span class=\"glyphicon glyphicon-thumbs-up\"></span></a>"
+                
+                 // text+="<div class=\"form-check-inline\"><label class=\"form-check-label\"\><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Agree</label><input type=\"radio\" class=\"form-check-input\" name=\"optradio\" disabled>Disagree</label></div>";
+     
+              
+                
+                //client.close();
+                
+            }
+         res.render('approveproctor', {text: text, admin: session.adminId, student: session.studentname, register:session.registerId, proctor:session.proctorId});
+        console.log('DB Connected!')
+     }).catch(err => {
+         console.log(err);
+     });
+
+})
 
 app.get('/login',(req,res)=>{
   console.log(session);
     if(session.adminId!=null){
         res.redirect('/addstudent');
     }
+    else if(session.registerId!=null){
+      res.redirect('/approveRegister')
+    }
+    else if(session.proctorId!=null){
+      res.redirect('/approveProctor')
+    }
     else if(session.Studentemail!=null){
         res.redirect('/profile');
     }
     else {
          
-        res.render('login',{admin: session.adminId, student: session.studentname});
+        res.render('login',{admin: session.adminId, student: session.studentname, register:session.registerId, proctor:session.proctorId});
     }
 })
 
@@ -393,6 +566,8 @@ app.post('/login',(req,res)=>{
                     session.registration=null;
                     session.Studentemail=null;
                     session.adminId=null;
+                    session.proctorId=null;
+                    session.registerId=null;
                       console.log(e);
                       res.redirect('/login');
                   }
@@ -408,6 +583,103 @@ app.post('/login',(req,res)=>{
           console.log(err);
 
         });
+
+     }else if(user=="register"){
+
+
+
+      var email = req.body.username;
+      var password = req.body.Password;
+      mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
+        var db = client.db('complainbox');
+        
+                db.collection('register').findOne({"Email":req.body.username},(err,result)=>{
+                  try{ assert.equal(null,err);
+                   assert.equal(req.body.username,result.Email);
+                   
+                   assert.equal(req.body.Password,result.Password);
+                   
+                   console.log("found!!!!"+ result._id);
+                   session.registerId=result._id;
+                   
+                   session.currentStudent=null;
+                   
+                   
+                   res.redirect('/approveRegister');
+                   client.close();
+                  }
+                  catch(e){
+                    session.studentId=null;
+                    session.studentname = null;
+                    session.registration=null;
+                    session.Studentemail=null;
+                    session.adminId=null;
+                    session.proctorId=null;
+                    session.registerId=null;
+                      console.log(e);
+                      res.redirect('/login');
+                  }
+                   
+               })
+           
+
+            
+           console.log('DB Connecmted!')
+        }).catch(err => {
+            
+            
+          console.log(err);
+
+        });
+
+
+     }else if(user=="proctor"){
+
+      var email = req.body.username;
+      var password = req.body.Password;
+      mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
+        var db = client.db('complainbox');
+        
+                db.collection('proctor').findOne({"Email":req.body.username},(err,result)=>{
+                  try{ assert.equal(null,err);
+                   assert.equal(req.body.username,result.Email);
+                   
+                   assert.equal(req.body.Password,result.Password);
+                   
+                   console.log("found!!!!"+ result._id);
+                   session.proctorId=result._id;
+                   
+                   session.currentStudent=null;
+                   
+                   
+                   res.redirect('/approveProctor');
+                   client.close();
+                  }
+                  catch(e){
+                    session.studentId=null;
+                    session.studentname = null;
+                    session.registration=null;
+                    session.Studentemail=null;
+                    session.adminId=null;
+                    session.registerId=null;
+                    session.proctorId=null;
+                      console.log(e);
+                      res.redirect('/login');
+                  }
+                   
+               })
+           
+
+            
+           console.log('DB Connecmted!')
+        }).catch(err => {
+            
+            
+          console.log(err);
+
+        });
+
+
 
      }else{
 
@@ -431,6 +703,8 @@ app.post('/login',(req,res)=>{
                     session.studentname = null;
                     session.registration= null; 
                     session.Studentemail= null;
+                    session.proctorId=null;
+                    session.registerId=null;
                     res.redirect('/login');
                     client.close();
                    }
@@ -445,60 +719,7 @@ app.post('/login',(req,res)=>{
 })
 
 
-// app.get('/admin',(req,res)=>{
-//     console.log(session);
-//     if(session.adminId!=null){
-//         res.redirect('/addstudent');
-//     }
-//     else {
-//         res.render('admin',{admin: session.adminId, student: session.studentname});
-//     }
-// })
-// app.post('/admin',(req,res)=>{
-//     var email = req.body.Email;
-//     var password = req.body.Password;
-    
 
-//     mongo.connect('mongodb://localhost',{useUnifiedTopology: true}).then((client) => {
-//         var db = client.db('complainbox');
-        
-//                 db.collection('admin').findOne({"Email":req.body.Email},(err,result)=>{
-//                   try{ assert.equal(null,err);
-//                    assert.equal(req.body.Email,result.Email);
-                   
-//                    assert.equal(req.body.Password,result.Password);
-                   
-//                    console.log("found!!!!"+ result._id);
-//                    session.adminId=result._id;
-                   
-                   
-//                    res.redirect('/addstudent');
-//                    client.close();
-//                   }
-//                   catch(e){
-//                     session.studentId=null;
-//                     session.studentname = null;
-//                     session.registration=null;
-//                     session.Studentemail=null;
-//                     session.adminId=null;
-//                       console.log(e);
-//                       res.redirect('/admin');
-//                   }
-                   
-//                })
-           
-
-            
-//            console.log('DB Connecmted!')
-//         }).catch(err => {
-            
-            
-//           console.log(err);
-
-//         });
-    
-   
-// })
 app.get('/studentlist/:id',redirectAdminlogin,(req,res)=>{
 
 })
@@ -548,7 +769,7 @@ app.get('/profile',redirectStudentlogin,async(req,res)=>{
                 text+="<h6 class =\"text_size_h4\">Date: "+result[i].date+" &ensp;"; 
                 text+="       Time: "+result[i].time+"</h6>";
                 text+="<br>";
-                text += "<p>:" +result[i].discription+"</p>";
+                text += "<p>" +result[i].discription+"</p>";
                 
                 
                 // text+=" <a href=\"#\"><span class=\"glyphicon glyphicon-thumbs-up\"></span></a>"
@@ -630,19 +851,6 @@ app.get('/profile',redirectStudentlogin,async(req,res)=>{
     
 })
 
-// app.get('/profile',redirectStudentlogin,(req,res)=>{
-   
-//     res.render('profile',{
-        
-//         name: session.studentname,
-//         email: session.Studentemail,
-//         registration: session.registration
-//     });
-// })
-
-
-
-
 
 app.get('/addcomplain',(req,res)=>{
     res.render('complain',{admin: session.adminId, student: session.studentname});
@@ -710,6 +918,8 @@ app.post('/addcomplain',(req,res)=>{
        compare: date+"::"+time,
        discription: req.body.comment,
        complainerId: session.studentId,
+       register: false,
+       proctor: false,
        key : makeid(20)
    }
    var date = new Date();
@@ -787,6 +997,8 @@ app.get('/logout', function (req, res) {
     session.registration=null;
     session.Studentemail=null;
     session.adminId=null;
+    session.proctorId=null;
+    session.registerId=null;
     // req.session.destroy(function (err) {
     //     if (err) {
     //         console.log(err);

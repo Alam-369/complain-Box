@@ -40,7 +40,9 @@
       <div class="marge">
         <% if(files){%>
         <img class="circular--square" width="200" height="200" src="image/<%= files.filename %>" alt="Avatar">
-        <%}%>
+        <%}else{%>
+          <a class="btn4  btn-success " href='/pic'> Add Picture</a><br><br>
+          <%}%>
 
       </div>
 
@@ -57,7 +59,7 @@
           </li>
 
         </ul><br>
-        <a class="btn4  btn-success float-right" href='/pic'> Add Picture</a>
+       
         <a class="btn4 btn-success float-right" href='/addcomplain'>Add Complain</a>
         <a class="btn4  btn-success float-right" href='/logout'> Log Out</a>
         <a class="btn4  btn-success float-right" href='/changepassword'>Edit Password</a><br><br>
